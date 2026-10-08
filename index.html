@@ -1,0 +1,2445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#2563eb">
+
+<title>Food Nutrition Planner</title>
+
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#667085;
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --line:#e5e7eb;
+  --danger:#dc2626;
+  --green:#16a34a;
+  --shadow:0 8px 28px rgba(15,23,42,.08);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+header{
+  background:linear-gradient(135deg,#1d4ed8,#2563eb,#0ea5e9);
+  color:white;
+  padding:30px 15px;
+  text-align:center;
+}
+
+header h1{
+  margin:0 0 7px;
+  font-size:30px;
+}
+
+header p{
+  margin:0;
+  opacity:.9;
+}
+
+main{
+  max-width:1150px;
+  margin:auto;
+  padding:20px 14px 60px;
+}
+
+.card{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+
+h2{
+  margin:0 0 15px;
+  font-size:21px;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin-bottom:7px;
+}
+
+input,select{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid #ccd2dc;
+  border-radius:10px;
+  font-size:15px;
+  background:white;
+  color:var(--text);
+}
+
+input:focus,select:focus{
+  outline:3px solid rgba(37,99,235,.15);
+  border-color:var(--primary);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:13px;
+}
+
+.search{
+  position:relative;
+}
+
+.results{
+  display:none;
+  position:absolute;
+  z-index:100;
+  left:0;
+  right:0;
+  top:100%;
+  max-height:320px;
+  overflow:auto;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  margin-top:4px;
+}
+
+.result{
+  padding:11px 13px;
+  border-bottom:1px solid #f0f2f5;
+  cursor:pointer;
+}
+
+.result:hover{
+  background:#eff6ff;
+}
+
+.buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:14px;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  background:var(--primary);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  background:var(--primary-dark);
+}
+
+button.gray{
+  background:#64748b;
+}
+
+button.red{
+  background:var(--danger);
+}
+
+button.green{
+  background:var(--green);
+}
+
+button.light{
+  background:#e8efff;
+  color:#1d4ed8;
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+}
+
+.tab{
+  background:#edf1f7;
+  color:#334155;
+  padding:13px;
+}
+
+.tab.active{
+  background:var(--primary);
+  color:white;
+}
+
+.plan{
+  display:none;
+}
+
+.plan.active{
+  display:block;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+.stat{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:13px;
+}
+
+.stat span{
+  display:block;
+  font-size:11px;
+  font-weight:bold;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+.stat strong{
+  display:block;
+  margin-top:5px;
+  font-size:19px;
+}
+
+.vitamins{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-top:12px;
+}
+
+.vit{
+  background:#f0fdf4;
+  border:1px solid #dcfce7;
+  border-radius:12px;
+  padding:12px;
+}
+
+.vit span{
+  display:block;
+  color:#166534;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.vit strong{
+  display:block;
+  margin-top:4px;
+}
+
+.chart{
+  width:100%;
+  height:320px;
+}
+
+canvas{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.table-wrap{
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:950px;
+}
+
+th,td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
+  white-space:nowrap;
+}
+
+th{
+  background:#f8fafc;
+  font-size:11px;
+  color:#475467;
+  text-transform:uppercase;
+}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:25px;
+}
+
+.notice{
+  margin-top:14px;
+  background:#eff6ff;
+  color:#1e3a8a;
+  border:1px solid #bfdbfe;
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+}
+
+.small{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  margin-top:30px;
+}
+
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .stats{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .vitamins{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:560px){
+  header h1{
+    font-size:25px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .vitamins{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .card{
+    padding:15px;
+  }
+
+  .chart{
+    height:270px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🥗 Food Nutrition Planner</h1>
+  <p>Calories • Protein • Carbs • Fat • Sugar • Fiber • Vitamins</p>
+</header>
+
+<main>
+
+<!-- ADD FOOD -->
+<section class="card">
+
+<h2>➕ Add Food</h2>
+
+<div class="grid">
+
+<div class="search">
+<label>Search Food</label>
+
+<input
+ id="foodSearch"
+ type="text"
+ placeholder="Search apple, chicken, rice..."
+ autocomplete="off">
+
+<div id="results" class="results"></div>
+</div>
+
+<div>
+<label>Amount (g)</label>
+<input id="amount" type="number" min="1" value="100">
+</div>
+
+<div>
+<label>Meal</label>
+<select id="meal">
+<option>Breakfast</option>
+<option>Lunch</option>
+<option>Dinner</option>
+<option>Snack</option>
+</select>
+</div>
+
+<div>
+<label>Date</label>
+<input id="foodDate" type="date">
+</div>
+
+</div>
+
+<div style="margin-top:13px">
+
+<label>Selected Food</label>
+
+<input
+ id="selectedFood"
+ readonly
+ placeholder="Select a food from search results">
+
+</div>
+
+<div class="buttons">
+<button id="addFood">＋ Add Food</button>
+<button class="gray" id="clearSelection">Clear</button>
+</div>
+
+<div class="notice">
+<strong>Offline website:</strong>
+Your records are saved in this browser using localStorage.
+No backend or database is required.
+</div>
+
+</section>
+
+
+<!-- TABS -->
+<section class="card">
+
+<div class="tabs">
+
+<button class="tab active" data-plan="daily">
+📅 Daily
+</button>
+
+<button class="tab" data-plan="weekly">
+📊 Weekly
+</button>
+
+<button class="tab" data-plan="monthly">
+🗓️ Monthly
+</button>
+
+</div>
+
+</section>
+
+
+<!-- DAILY -->
+<section id="daily" class="plan active">
+
+<div class="card">
+
+<h2>📅 Daily Nutrition Plan</h2>
+
+<label>Date</label>
+<input id="dailyDate" type="date">
+
+<div class="stats">
+
+<div class="stat">
+<span>Calories</span>
+<strong id="dc">0</strong>
+</div>
+
+<div class="stat">
+<span>Protein</span>
+<strong id="dp">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Carbs</span>
+<strong id="dcarbs">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Fat</span>
+<strong id="dfat">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Sugar</span>
+<strong id="dsugar">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Fiber</span>
+<strong id="dfiber">0 g</strong>
+</div>
+
+</div>
+
+<div class="vitamins">
+
+<div class="vit">
+<span>Vitamin A</span>
+<strong id="dva">0 µg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin C</span>
+<strong id="dvc">0 mg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin D</span>
+<strong id="dvd">0 µg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin E</span>
+<strong id="dve">0 mg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin B12</span>
+<strong id="dvb12">0 µg</strong>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📈 Daily Nutrition Graph</h2>
+
+<div class="chart">
+<canvas id="dailyChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>🍽️ Daily Food List</h2>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Food</th>
+<th>Meal</th>
+<th>Amount</th>
+<th>Calories</th>
+<th>Protein</th>
+<th>Carbs</th>
+<th>Fat</th>
+<th>Sugar</th>
+<th>Fiber</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="dailyTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- WEEKLY -->
+<section id="weekly" class="plan">
+
+<div class="card">
+
+<h2>📊 Weekly Nutrition Plan</h2>
+
+<label>Week Starting</label>
+<input id="weekDate" type="date">
+
+<div class="stats">
+
+<div class="stat">
+<span>Calories</span>
+<strong id="wc">0</strong>
+</div>
+
+<div class="stat">
+<span>Protein</span>
+<strong id="wp">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Carbs</span>
+<strong id="wcarbs">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Fat</span>
+<strong id="wfat">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Sugar</span>
+<strong id="wsugar">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Fiber</span>
+<strong id="wfiber">0 g</strong>
+</div>
+
+</div>
+
+<div class="vitamins">
+
+<div class="vit">
+<span>Vitamin A</span>
+<strong id="wva">0 µg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin C</span>
+<strong id="wvc">0 mg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin D</span>
+<strong id="wvd">0 µg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin E</span>
+<strong id="wve">0 mg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin B12</span>
+<strong id="wvb12">0 µg</strong>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📈 Weekly Calories Graph</h2>
+
+<div class="chart">
+<canvas id="weeklyChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📋 Seven-Day Breakdown</h2>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Date</th>
+<th>Calories</th>
+<th>Protein</th>
+<th>Carbs</th>
+<th>Fat</th>
+<th>Sugar</th>
+<th>Fiber</th>
+</tr>
+
+</thead>
+
+<tbody id="weeklyTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- MONTHLY -->
+<section id="monthly" class="plan">
+
+<div class="card">
+
+<h2>🗓️ Monthly Nutrition Plan</h2>
+
+<label>Month</label>
+<input id="monthDate" type="month">
+
+<div class="stats">
+
+<div class="stat">
+<span>Calories</span>
+<strong id="mc">0</strong>
+</div>
+
+<div class="stat">
+<span>Protein</span>
+<strong id="mp">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Carbs</span>
+<strong id="mcarbs">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Fat</span>
+<strong id="mfat">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Sugar</span>
+<strong id="msugar">0 g</strong>
+</div>
+
+<div class="stat">
+<span>Fiber</span>
+<strong id="mfiber">0 g</strong>
+</div>
+
+</div>
+
+<div class="vitamins">
+
+<div class="vit">
+<span>Vitamin A</span>
+<strong id="mva">0 µg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin C</span>
+<strong id="mvc">0 mg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin D</span>
+<strong id="mvd">0 µg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin E</span>
+<strong id="mve">0 mg</strong>
+</div>
+
+<div class="vit">
+<span>Vitamin B12</span>
+<strong id="mvb12">0 µg</strong>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📈 Monthly Calories Graph</h2>
+
+<div class="chart">
+<canvas id="monthlyChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📋 Monthly Breakdown</h2>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Date</th>
+<th>Calories</th>
+<th>Protein</th>
+<th>Carbs</th>
+<th>Fat</th>
+<th>Sugar</th>
+<th>Fiber</th>
+</tr>
+
+</thead>
+
+<tbody id="monthlyTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- DATA -->
+<section class="card">
+
+<h2>💾 Your Data</h2>
+
+<div class="buttons">
+
+<button id="csvBtn">
+⬇ Download Excel-Compatible CSV
+</button>
+
+<button class="light" id="jsonBtn">
+⬇ Backup JSON
+</button>
+
+<button class="gray" id="restoreBtn">
+⬆ Restore JSON
+</button>
+
+<button class="red" id="deleteBtn">
+🗑 Delete All
+</button>
+
+<input
+ id="jsonFile"
+ type="file"
+ accept=".json"
+ hidden>
+
+</div>
+
+<p class="small">
+Your food records stay in this browser. Export your records regularly if you want a backup.
+</p>
+
+</section>
+
+<div class="footer">
+Food Nutrition Planner • 500 embedded food records • No backend
+</div>
+
+</main>
+
+
+<script>
+
+/* =========================================================
+   500 EMBEDDED FOOD DATABASE
+   100 common foods × 5 common forms
+   ========================================================= */
+
+const BASE_FOODS = [
+
+/* name, category, calories, protein, carbs, fat, sugar, fiber */
+
+["Apple","Fruit",52,.3,13.8,.2,10.4,2.4],
+["Banana","Fruit",89,1.1,22.8,.3,12.2,2.6],
+["Orange","Fruit",47,.9,11.8,.1,9.4,2.4],
+["Mango","Fruit",60,.8,15,.4,13.7,1.6],
+["Pineapple","Fruit",50,.5,13.1,.1,9.9,1.4],
+["Papaya","Fruit",43,.5,10.8,.3,7.8,1.7],
+["Watermelon","Fruit",30,.6,7.6,.2,6.2,.4],
+["Strawberry","Fruit",32,.7,7.7,.3,4.9,2],
+["Blueberry","Fruit",57,.7,14.5,.3,10,2.4],
+["Grape","Fruit",69,.7,18.1,.2,15.5,.9],
+["Pear","Fruit",57,.4,15.2,.1,9.8,3.1],
+["Peach","Fruit",39,.9,9.5,.3,8.4,1.5],
+["Kiwi","Fruit",61,1.1,14.7,.5,9,3],
+["Guava","Fruit",68,2.6,14.3,1,8.9,5.4],
+["Pomegranate","Fruit",83,1.7,18.7,1.2,13.7,4],
+
+["Carrot","Vegetable",41,.9,9.6,.2,4.7,2.8],
+["Broccoli","Vegetable",34,2.8,6.6,.4,1.7,2.6],
+["Cauliflower","Vegetable",25,1.9,5,.3,1.9,2],
+["Spinach","Vegetable",23,2.9,3.6,.4,.4,2.2],
+["Kale","Vegetable",49,4.3,8.8,.9,2.3,4.1],
+["Cabbage","Vegetable",25,1.3,5.8,.1,3.2,2.5],
+["Tomato","Vegetable",18,.9,3.9,.2,2.6,1.2],
+["Cucumber","Vegetable",15,.7,3.6,.1,1.7,.5],
+["Bell Pepper","Vegetable",31,1,6,.3,4.2,2.1],
+["Onion","Vegetable",40,1.1,9.3,.1,4.2,1.7],
+["Garlic","Vegetable",149,6.4,33.1,.5,1,2.1],
+["Sweet Potato","Vegetable",86,1.6,20.1,.1,4.2,3],
+["Potato","Vegetable",77,2,17.5,.1,.8,2.2],
+["Corn","Vegetable",86,3.3,18.7,1.4,6.3,2],
+["Green Peas","Vegetable",81,5.4,14.5,.4,5.7,5.1],
+
+["Mushroom","Vegetable",22,3.1,3.3,.3,2,1],
+["Eggplant","Vegetable",25,1,5.9,.2,3.5,3],
+["Zucchini","Vegetable",17,1.2,3.1,.3,2.5,1],
+["Lettuce","Vegetable",15,1.4,2.9,.2,.8,1.3],
+["Beetroot","Vegetable",43,1.6,9.6,.2,6.8,2.8],
+
+["White Rice","Grain",130,2.7,28.2,.3,.1,.4],
+["Brown Rice","Grain",123,2.7,25.6,1,.2,1.6],
+["Jasmine Rice","Grain",130,2.4,28.7,.2,.1,.4],
+["Basmati Rice","Grain",121,3.5,25.2,.4,.1,.4],
+["Oats","Grain",389,16.9,66.3,6.9,.9,10.6],
+["Quinoa","Grain",120,4.4,21.3,1.9,.9,2.8],
+["Barley","Grain",123,2.3,28.2,.4,.3,3.8],
+["Millet","Grain",119,3.5,23.7,1,.6,1.3],
+["Cornmeal","Grain",362,8.1,76.9,3.6,1.6,7.3],
+["Whole Wheat Flour","Grain",340,13.7,72.6,2.5,.4,10.7],
+["Whole Wheat Bread","Grain",247,13,41.4,4.2,5.7,6],
+["White Bread","Grain",266,7.6,49.4,3.3,5,2.4],
+
+["Pasta","Grain",158,5.8,30.9,.9,.6,1.8],
+["Rice Noodles","Grain",109,.9,24.9,.2,.1,.9],
+["Corn Tortilla","Grain",218,5.7,44.6,2.9,.9,6.3],
+
+["Chickpeas","Legume",164,8.9,27.4,2.6,4.8,7.6],
+["Lentils","Legume",116,9,20.1,.4,1.8,7.9],
+["Kidney Beans","Legume",127,8.7,22.8,.5,.3,6.4],
+["Black Beans","Legume",132,8.9,23.7,.5,.3,8.7],
+["Soybeans","Legume",173,16.6,9.9,9,3,6],
+["Edamame","Legume",121,11.9,8.9,5.2,2.2,5.2],
+["Mung Beans","Legume",105,7,19.2,.4,2,7.6],
+["Tofu","Legume",76,8.1,1.9,4.8,.6,.3],
+
+["Chicken Breast","Meat",165,31,0,3.6,0,0],
+["Chicken Thigh","Meat",209,26,0,10.9,0,0],
+["Turkey Breast","Meat",135,29.5,0,1.8,0,0],
+["Lean Beef","Meat",176,26,0,7,0,0],
+["Beef Steak","Meat",271,25.9,0,18.5,0,0],
+["Ground Beef","Meat",217,26.1,0,11.8,0,0],
+["Pork Loin","Meat",242,27.3,0,14,0,0],
+["Pork Chop","Meat",231,25.7,0,13.9,0,0],
+["Lamb","Meat",258,25.6,0,16.5,0,0],
+["Duck","Meat",337,19,0,28.4,0,0],
+
+["Salmon","Seafood",208,20.4,0,13.4,0,0],
+["Tuna","Seafood",132,28.2,0,1.3,0,0],
+["Sardines","Seafood",208,24.6,0,11.5,0,0],
+["Mackerel","Seafood",205,18.6,0,13.9,0,0],
+["Shrimp","Seafood",99,24,.2,.3,0,0],
+["Crab","Seafood",97,19.2,0,1.5,0,0],
+["Cod","Seafood",82,17.8,0,.7,0,0],
+["Tilapia","Seafood",128,26,0,2.7,0,0],
+["Squid","Seafood",92,15.6,3.1,1.4,0,0],
+["Mussels","Seafood",86,11.9,3.7,2.2,0,0],
+
+["Whole Milk","Dairy",61,3.2,4.8,3.3,5.1,0],
+["Low Fat Milk","Dairy",42,3.4,5,1,5,0],
+["Plain Yogurt","Dairy",61,3.5,4.7,3.3,4.7,0],
+["Greek Yogurt","Dairy",97,9,3.9,5,3.6,0],
+["Cheddar Cheese","Dairy",403,25,1.3,33,.5,0],
+["Mozzarella","Dairy",280,28,3.1,17.1,1,0],
+["Cottage Cheese","Dairy",98,11.1,3.4,4.3,2.7,0],
+["Butter","Dairy",717,.9,.1,81.1,.1,0],
+["Egg","Egg",143,12.6,.7,9.5,.4,0],
+["Egg White","Egg",52,10.9,.7,.2,.7,0],
+
+["Almonds","Nuts",579,21.2,21.6,49.9,4.4,12.5],
+["Peanuts","Nuts",567,25.8,16.1,49.2,4.7,8.5],
+["Cashews","Nuts",553,18.2,30.2,43.9,5.9,3.3],
+["Walnuts","Nuts",654,15.2,13.7,65.2,2.6,6.7],
+["Pistachios","Nuts",560,20.2,27.2,45.3,7.7,10.3],
+["Sunflower Seeds","Seeds",584,20.8,20,51.5,2.6,8.6],
+["Pumpkin Seeds","Seeds",559,30.2,10.7,49,1.4,6],
+["Chia Seeds","Seeds",486,16.5,42.1,30.7,0,34.4],
+["Flaxseed","Seeds",534,18.3,28.9,42.2,1.6,27.3],
+["Sesame Seeds","Seeds",573,17.7,23.5,49.7,.3,11.8],
+
+["Dark Chocolate","Snack",600,7.8,46,43.1,24,10.9],
+["Peanut Butter","Snack",588,25.1,20,50,9.2,6],
+["Honey","Sweetener",304,.3,82.4,0,82.1,.2],
+["Olive Oil","Oil",884,0,0,100,0,0],
+["Mayonnaise","Sauce",680,1,.6,75,.6,0],
+["Tomato Sauce","Sauce",29,1.4,6.6,.2,4.2,1.5],
+["Hummus","Snack",166,7.9,14.3,9.6,.3,6],
+["Popcorn","Snack",387,13.3,77.8,4.5,.9,14.5],
+["Potato Chips","Snack",536,7,53,34.6,.3,4.8],
+["Crackers","Snack",502,8.5,61,24.2,6,3]
+
+];
+
+
+/* =========================================================
+   CREATE 500 SEARCHABLE FOODS
+   ========================================================= */
+
+const forms={
+  Fruit:["Raw","Sliced","Chopped","Peeled","Frozen"],
+  Vegetable:["Raw","Steamed","Boiled","Roasted","Chopped"],
+  Grain:["Dry","Cooked","Boiled","Steamed","Prepared"],
+  Legume:["Dry","Boiled","Cooked","Canned","Mashed"],
+  Meat:["Raw","Cooked","Grilled","Baked","Roasted"],
+  Seafood:["Raw","Cooked","Grilled","Baked","Steamed"],
+  Dairy:["Regular","Plain","Low Fat","Reduced Fat","Serving"],
+  Egg:["Raw","Boiled","Poached","Scrambled","Cooked"],
+  Nuts:["Raw","Roasted","Unsalted","Salted","Ground"],
+  Seeds:["Raw","Roasted","Ground","Unsalted","Whole"],
+  Snack:["Original","Ready to Eat","Homemade","Regular","Serving"],
+  Sweetener:["Original","Natural","Regular","Serving","Ready to Use"],
+  Oil:["Original","Pure","Extra Virgin","Regular","Serving"],
+  Sauce:["Original","Homemade","Reduced Fat","Regular","Serving"]
+};
+
+
+/* Vitamin reference values.
+   These are general approximate values per 100g.
+*/
+
+const vitaminByCategory={
+
+Fruit:{
+ A:45,C:35,D:0,E:.5,B12:0
+},
+
+Vegetable:{
+ A:350,C:35,D:0,E:1,B12:0
+},
+
+Grain:{
+ A:2,C:0,D:0,E:.5,B12:.05
+},
+
+Legume:{
+ A:10,C:2,D:0,E:.4,B12:0
+},
+
+Meat:{
+ A:15,C:0,D:.3,E:.3,B12:2
+},
+
+Seafood:{
+ A:25,C:0,D:5,E:1,B12:4
+},
+
+Dairy:{
+ A:80,C:0,D:1,E:.2,B12:.5
+},
+
+Egg:{
+ A:160,C:0,D:2,E:1,B12:2
+},
+
+Nuts:{
+ A:5,C:0,D:0,E:8,B12:0
+},
+
+Seeds:{
+ A:5,C:0,D:0,E:3,B12:0
+},
+
+Snack:{
+ A:10,C:0,D:0,E:1,B12:0
+},
+
+Sweetener:{
+ A:0,C:0,D:0,E:0,B12:0
+},
+
+Oil:{
+ A:0,C:0,D:0,E:10,B12:0
+},
+
+Sauce:{
+ A:30,C:5,D:0,E:1,B12:0
+}
+
+};
+
+
+const foods=[];
+
+BASE_FOODS.forEach((b,index)=>{
+
+  const [
+    name,
+    category,
+    calories,
+    protein,
+    carbs,
+    fat,
+    sugar,
+    fiber
+  ]=b;
+
+  const v=vitaminByCategory[category] ||
+          {A:10,C:2,D:0,E:.5,B12:0};
+
+  const list=forms[category] || forms.Snack;
+
+  list.forEach((form,i)=>{
+
+    foods.push({
+
+      id:index*5+i+1,
+
+      name:name+" — "+form,
+
+      base:name,
+
+      form:form,
+
+      category:category,
+
+      calories:calories,
+
+      protein:protein,
+
+      carbs:carbs,
+
+      fat:fat,
+
+      sugar:sugar,
+
+      fiber:fiber,
+
+      vitaminA:v.A,
+
+      vitaminC:v.C,
+
+      vitaminD:v.D,
+
+      vitaminE:v.E,
+
+      vitaminB12:v.B12
+
+    });
+
+  });
+
+});
+
+
+/* =========================================================
+   STORAGE
+   ========================================================= */
+
+const STORAGE_KEY="foodNutritionPlannerData";
+
+let entries=[];
+
+try{
+  entries=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+  if(!Array.isArray(entries)) entries=[];
+}catch{
+  entries=[];
+}
+
+let selectedFood=null;
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function $(id){
+  return document.getElementById(id);
+}
+
+function today(){
+
+  const d=new Date();
+
+  return d.getFullYear()+"-"+
+    String(d.getMonth()+1).padStart(2,"0")+"-"+
+    String(d.getDate()).padStart(2,"0");
+
+}
+
+function monthNow(){
+
+  return today().slice(0,7);
+
+}
+
+function save(){
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(entries)
+  );
+
+}
+
+function number(value){
+
+  return Number(value||0);
+
+}
+
+function format(value){
+
+  return number(value).toLocaleString(
+    undefined,
+    {
+      maximumFractionDigits:1
+    }
+  );
+
+}
+
+function calculate(value,grams){
+
+  return number(value)*number(grams)/100;
+
+}
+
+function safe(text){
+
+  return String(text)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+function dateAdd(date,days){
+
+  const d=new Date(date+"T00:00:00");
+
+  d.setDate(d.getDate()+days);
+
+  return d.toISOString().slice(0,10);
+
+}
+
+
+/* =========================================================
+   TOTALS
+   ========================================================= */
+
+function total(list){
+
+  const t={
+
+    calories:0,
+    protein:0,
+    carbs:0,
+    fat:0,
+    sugar:0,
+    fiber:0,
+
+    vitaminA:0,
+    vitaminC:0,
+    vitaminD:0,
+    vitaminE:0,
+    vitaminB12:0
+
+  };
+
+  list.forEach(e=>{
+
+    const f=e.food;
+    const g=e.amount;
+
+    t.calories+=calculate(f.calories,g);
+    t.protein+=calculate(f.protein,g);
+    t.carbs+=calculate(f.carbs,g);
+    t.fat+=calculate(f.fat,g);
+    t.sugar+=calculate(f.sugar,g);
+    t.fiber+=calculate(f.fiber,g);
+
+    t.vitaminA+=calculate(f.vitaminA,g);
+    t.vitaminC+=calculate(f.vitaminC,g);
+    t.vitaminD+=calculate(f.vitaminD,g);
+    t.vitaminE+=calculate(f.vitaminE,g);
+    t.vitaminB12+=calculate(f.vitaminB12,g);
+
+  });
+
+  return t;
+
+}
+
+
+function entriesForDate(date){
+
+  return entries.filter(e=>e.date===date);
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+$("foodSearch").addEventListener("input",function(){
+
+  const q=this.value.trim().toLowerCase();
+
+  const box=$("results");
+
+  if(!q){
+
+    box.style.display="none";
+    return;
+
+  }
+
+  const found=foods.filter(f=>
+
+    f.name.toLowerCase().includes(q) ||
+
+    f.base.toLowerCase().includes(q) ||
+
+    f.category.toLowerCase().includes(q)
+
+  ).slice(0,40);
+
+
+  if(!found.length){
+
+    box.innerHTML=
+      `<div class="result">No food found.</div>`;
+
+    box.style.display="block";
+
+    return;
+
+  }
+
+
+  box.innerHTML=found.map((f,i)=>`
+
+    <div class="result" data-index="${i}">
+
+      <strong>${safe(f.name)}</strong>
+
+      <br>
+
+      <span class="small">
+
+        ${safe(f.category)}
+        •
+        ${format(f.calories)} kcal / 100g
+
+      </span>
+
+    </div>
+
+  `).join("");
+
+
+  box.style.display="block";
+
+
+  [...box.querySelectorAll(".result[data-index]")]
+  .forEach((el,i)=>{
+
+    el.onclick=()=>{
+
+      selectedFood=found[i];
+
+      $("selectedFood").value=
+        selectedFood.name;
+
+      $("foodSearch").value=
+        selectedFood.base;
+
+      box.style.display="none";
+
+    };
+
+  });
+
+});
+
+
+document.addEventListener("click",function(e){
+
+  if(!e.target.closest(".search")){
+
+    $("results").style.display="none";
+
+  }
+
+});
+
+
+/* =========================================================
+   ADD FOOD
+   ========================================================= */
+
+$("addFood").onclick=function(){
+
+  if(!selectedFood){
+
+    alert("Please search for and select a food first.");
+
+    return;
+
+  }
+
+  const amount=number($("amount").value);
+
+  if(amount<=0){
+
+    alert("Please enter an amount greater than 0.");
+
+    return;
+
+  }
+
+  const date=
+    $("foodDate").value ||
+    today();
+
+  const meal=
+    $("meal").value;
+
+
+  entries.push({
+
+    id:Date.now()+"_"+Math.random(),
+
+    date:date,
+
+    meal:meal,
+
+    amount:amount,
+
+    food:selectedFood
+
+  });
+
+
+  save();
+
+  renderAll();
+
+  alert("Food added successfully.");
+
+};
+
+
+$("clearSelection").onclick=function(){
+
+  selectedFood=null;
+
+  $("foodSearch").value="";
+
+  $("selectedFood").value="";
+
+  $("results").style.display="none";
+
+};
+
+
+/* =========================================================
+   DELETE FOOD
+   ========================================================= */
+
+function deleteEntry(id){
+
+  entries=
+    entries.filter(e=>String(e.id)!==String(id));
+
+  save();
+
+  renderAll();
+
+}
+
+
+/* =========================================================
+   DAILY
+   ========================================================= */
+
+function renderDaily(){
+
+  const date=$("dailyDate").value;
+
+  const list=entriesForDate(date);
+
+  const t=total(list);
+
+
+  $("dc").textContent=format(t.calories);
+
+  $("dp").textContent=format(t.protein)+" g";
+
+  $("dcarbs").textContent=format(t.carbs)+" g";
+
+  $("dfat").textContent=format(t.fat)+" g";
+
+  $("dsugar").textContent=format(t.sugar)+" g";
+
+  $("dfiber").textContent=format(t.fiber)+" g";
+
+
+  $("dva").textContent=format(t.vitaminA)+" µg";
+
+  $("dvc").textContent=format(t.vitaminC)+" mg";
+
+  $("dvd").textContent=format(t.vitaminD)+" µg";
+
+  $("dve").textContent=format(t.vitaminE)+" mg";
+
+  $("dvb12").textContent=format(t.vitaminB12)+" µg";
+
+
+  if(!list.length){
+
+    $("dailyTable").innerHTML=
+      `<tr>
+        <td colspan="10" class="empty">
+          No food added for this date.
+        </td>
+      </tr>`;
+
+  }else{
+
+    $("dailyTable").innerHTML=list.map(e=>{
+
+      const f=e.food;
+
+      return `
+      <tr>
+
+        <td>${safe(f.name)}</td>
+
+        <td>${safe(e.meal)}</td>
+
+        <td>${format(e.amount)} g</td>
+
+        <td>${format(calculate(f.calories,e.amount))}</td>
+
+        <td>${format(calculate(f.protein,e.amount))} g</td>
+
+        <td>${format(calculate(f.carbs,e.amount))} g</td>
+
+        <td>${format(calculate(f.fat,e.amount))} g</td>
+
+        <td>${format(calculate(f.sugar,e.amount))} g</td>
+
+        <td>${format(calculate(f.fiber,e.amount))} g</td>
+
+        <td>
+          <button
+            class="red"
+            onclick="deleteEntry('${String(e.id).replaceAll("'","")}')">
+            Delete
+          </button>
+        </td>
+
+      </tr>
+      `;
+
+    }).join("");
+
+  }
+
+
+  drawDailyChart(t);
+
+}
+
+
+/* =========================================================
+   DAILY GRAPH
+   ========================================================= */
+
+function drawDailyChart(t){
+
+  const canvas=$("dailyChart");
+
+  const box=canvas.parentElement;
+
+  const width=box.clientWidth;
+
+  const height=box.clientHeight;
+
+  const ratio=window.devicePixelRatio||1;
+
+  canvas.width=width*ratio;
+
+  canvas.height=height*ratio;
+
+  const ctx=canvas.getContext("2d");
+
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+
+  ctx.clearRect(0,0,width,height);
+
+
+  const data=[
+
+    ["Calories",t.calories,"kcal"],
+
+    ["Protein",t.protein,"g"],
+
+    ["Carbs",t.carbs,"g"],
+
+    ["Fat",t.fat,"g"],
+
+    ["Sugar",t.sugar,"g"],
+
+    ["Fiber",t.fiber,"g"]
+
+  ];
+
+
+  const max=Math.max(
+    ...data.map(x=>x[1]),
+    1
+  );
+
+
+  const left=45;
+
+  const bottom=60;
+
+  const top=25;
+
+  const usable=width-left-20;
+
+  const slot=usable/data.length;
+
+  const bar=Math.min(
+    65,
+    slot*.65
+  );
+
+
+  ctx.font="12px Arial";
+
+  data.forEach((item,i)=>{
+
+    const x=
+      left+
+      i*slot+
+      (slot-bar)/2;
+
+    const h=
+      (item[1]/max)*
+      (height-top-bottom);
+
+    const y=
+      height-bottom-h;
+
+
+    ctx.fillStyle="#2563eb";
+
+    ctx.fillRect(
+      x,
+      y,
+      bar,
+      h
+    );
+
+
+    ctx.fillStyle="#172033";
+
+    ctx.textAlign="center";
+
+    ctx.fillText(
+      format(item[1]),
+      x+bar/2,
+      Math.max(15,y-7)
+    );
+
+
+    ctx.fillText(
+      item[0],
+      x+bar/2,
+      height-35
+    );
+
+  });
+
+}
+
+
+/* =========================================================
+   WEEKLY
+   ========================================================= */
+
+function renderWeekly(){
+
+  const start=$("weekDate").value;
+
+  const rows=[];
+
+  for(let i=0;i<7;i++){
+
+    const date=dateAdd(start,i);
+
+    rows.push({
+
+      date:date,
+
+      total:total(
+        entriesForDate(date)
+      )
+
+    });
+
+  }
+
+
+  const all=total(
+
+    rows.flatMap(r=>
+      entriesForDate(r.date)
+    )
+
+  );
+
+
+  $("wc").textContent=format(all.calories);
+
+  $("wp").textContent=format(all.protein)+" g";
+
+  $("wcarbs").textContent=format(all.carbs)+" g";
+
+  $("wfat").textContent=format(all.fat)+" g";
+
+  $("wsugar").textContent=format(all.sugar)+" g";
+
+  $("wfiber").textContent=format(all.fiber)+" g";
+
+
+  $("wva").textContent=format(all.vitaminA)+" µg";
+
+  $("wvc").textContent=format(all.vitaminC)+" mg";
+
+  $("wvd").textContent=format(all.vitaminD)+" µg";
+
+  $("wve").textContent=format(all.vitaminE)+" mg";
+
+  $("wvb12").textContent=format(all.vitaminB12)+" µg";
+
+
+  $("weeklyTable").innerHTML=
+    rows.map(r=>`
+
+      <tr>
+
+        <td>${r.date}</td>
+
+        <td>${format(r.total.calories)}</td>
+
+        <td>${format(r.total.protein)} g</td>
+
+        <td>${format(r.total.carbs)} g</td>
+
+        <td>${format(r.total.fat)} g</td>
+
+        <td>${format(r.total.sugar)} g</td>
+
+        <td>${format(r.total.fiber)} g</td>
+
+      </tr>
+
+    `).join("");
+
+
+  drawLineChart(
+    $("weeklyChart"),
+    rows,
+    "Calories"
+  );
+
+}
+
+
+/* =========================================================
+   MONTHLY
+   ========================================================= */
+
+function renderMonthly(){
+
+  const month=$("monthDate").value;
+
+  const [year,monthNumber]=
+    month.split("-").map(Number);
+
+
+  const days=
+    new Date(
+      year,
+      monthNumber,
+      0
+    ).getDate();
+
+
+  const rows=[];
+
+
+  for(let i=1;i<=days;i++){
+
+    const date=
+      year+
+      "-"+
+      String(monthNumber).padStart(2,"0")+
+      "-"+
+      String(i).padStart(2,"0");
+
+
+    rows.push({
+
+      date:date,
+
+      total:total(
+        entriesForDate(date)
+      )
+
+    });
+
+  }
+
+
+  const all=total(
+
+    rows.flatMap(r=>
+      entriesForDate(r.date)
+    )
+
+  );
+
+
+  $("mc").textContent=format(all.calories);
+
+  $("mp").textContent=format(all.protein)+" g";
+
+  $("mcarbs").textContent=format(all.carbs)+" g";
+
+  $("mfat").textContent=format(all.fat)+" g";
+
+  $("msugar").textContent=format(all.sugar)+" g";
+
+  $("mfiber").textContent=format(all.fiber)+" g";
+
+
+  $("mva").textContent=format(all.vitaminA)+" µg";
+
+  $("mvc").textContent=format(all.vitaminC)+" mg";
+
+  $("mvd").textContent=format(all.vitaminD)+" µg";
+
+  $("mve").textContent=format(all.vitaminE)+" mg";
+
+  $("mvb12").textContent=format(all.vitaminB12)+" µg";
+
+
+  $("monthlyTable").innerHTML=
+    rows.map(r=>`
+
+      <tr>
+
+        <td>${r.date}</td>
+
+        <td>${format(r.total.calories)}</td>
+
+        <td>${format(r.total.protein)} g</td>
+
+        <td>${format(r.total.carbs)} g</td>
+
+        <td>${format(r.total.fat)} g</td>
+
+        <td>${format(r.total.sugar)} g</td>
+
+        <td>${format(r.total.fiber)} g</td>
+
+      </tr>
+
+    `).join("");
+
+
+  drawLineChart(
+    $("monthlyChart"),
+    rows,
+    "Calories"
+  );
+
+}
+
+
+/* =========================================================
+   LINE GRAPH
+   ========================================================= */
+
+function drawLineChart(
+  canvas,
+  rows,
+  title
+){
+
+  const box=canvas.parentElement;
+
+  const width=box.clientWidth;
+
+  const height=box.clientHeight;
+
+  const ratio=window.devicePixelRatio||1;
+
+  canvas.width=width*ratio;
+
+  canvas.height=height*ratio;
+
+  const ctx=canvas.getContext("2d");
+
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+
+  ctx.clearRect(0,0,width,height);
+
+
+  const left=45;
+
+  const right=20;
+
+  const top=30;
+
+  const bottom=45;
+
+  const chartWidth=
+    width-left-right;
+
+  const chartHeight=
+    height-top-bottom;
+
+
+  const values=
+    rows.map(r=>r.total.calories);
+
+  const max=
+    Math.max(...values,1);
+
+
+  ctx.strokeStyle="#e2e8f0";
+
+  ctx.lineWidth=1;
+
+
+  for(let i=0;i<=4;i++){
+
+    const y=
+      top+
+      chartHeight*i/4;
+
+    ctx.beginPath();
+
+    ctx.moveTo(left,y);
+
+    ctx.lineTo(
+      width-right,
+      y
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  ctx.fillStyle="#172033";
+
+  ctx.font="bold 15px Arial";
+
+  ctx.textAlign="left";
+
+  ctx.fillText(
+    title,
+    left,
+    18
+  );
+
+
+  ctx.beginPath();
+
+
+  rows.forEach((r,i)=>{
+
+    const x=
+      left+
+      (
+        rows.length===1
+        ? 0
+        : i/(rows.length-1)*chartWidth
+      );
+
+
+    const y=
+      top+
+      chartHeight-
+      r.total.calories/max*
+      chartHeight;
+
+
+    if(i===0)
+      ctx.moveTo(x,y);
+    else
+      ctx.lineTo(x,y);
+
+  });
+
+
+  ctx.strokeStyle="#2563eb";
+
+  ctx.lineWidth=3;
+
+  ctx.stroke();
+
+
+  rows.forEach((r,i)=>{
+
+    const x=
+      left+
+      (
+        rows.length===1
+        ? 0
+        : i/(rows.length-1)*chartWidth
+      );
+
+
+    const y=
+      top+
+      chartHeight-
+      r.total.calories/max*
+      chartHeight;
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      4,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fillStyle="#2563eb";
+
+    ctx.fill();
+
+
+    let label="";
+
+
+    if(rows.length<=7){
+
+      const d=
+        new Date(
+          r.date+"T00:00:00"
+        );
+
+      label=
+        d.toLocaleDateString(
+          undefined,
+          {weekday:"short"}
+        );
+
+    }else{
+
+      const d=
+        new Date(
+          r.date+"T00:00:00"
+        );
+
+      label=
+        d.getDate();
+
+    }
+
+
+    if(
+      rows.length<=7 ||
+      i%5===0 ||
+      i===rows.length-1
+    ){
+
+      ctx.fillStyle="#667085";
+
+      ctx.font="11px Arial";
+
+      ctx.textAlign="center";
+
+      ctx.fillText(
+        label,
+        x,
+        height-15
+      );
+
+    }
+
+  });
+
+}
+
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+document
+.querySelectorAll(".tab")
+.forEach(button=>{
+
+  button.onclick=function(){
+
+    document
+    .querySelectorAll(".tab")
+    .forEach(b=>
+      b.classList.remove("active")
+    );
+
+    document
+    .querySelectorAll(".plan")
+    .forEach(p=>
+      p.classList.remove("active")
+    );
+
+
+    this.classList.add("active");
+
+    $(this.dataset.plan)
+      .classList.add("active");
+
+
+    renderAll();
+
+  };
+
+});
+
+
+/* =========================================================
+   EXPORT CSV
+   ========================================================= */
+
+$("csvBtn").onclick=function(){
+
+  const header=[
+
+    "Date",
+    "Meal",
+    "Food",
+    "Category",
+    "Amount (g)",
+    "Calories",
+    "Protein (g)",
+    "Carbohydrates (g)",
+    "Fat (g)",
+    "Sugar (g)",
+    "Fiber (g)",
+    "Vitamin A (ug)",
+    "Vitamin C (mg)",
+    "Vitamin D (ug)",
+    "Vitamin E (mg)",
+    "Vitamin B12 (ug)"
+
+  ];
+
+
+  const rows=entries.map(e=>{
+
+    const f=e.food;
+    const g=e.amount;
+
+
+    return [
+
+      e.date,
+      e.meal,
+      f.name,
+      f.category,
+      g,
+
+      calculate(f.calories,g),
+      calculate(f.protein,g),
+      calculate(f.carbs,g),
+      calculate(f.fat,g),
+      calculate(f.sugar,g),
+      calculate(f.fiber,g),
+
+      calculate(f.vitaminA,g),
+      calculate(f.vitaminC,g),
+      calculate(f.vitaminD,g),
+      calculate(f.vitaminE,g),
+      calculate(f.vitaminB12,g)
+
+    ];
+
+  });
+
+
+  const csv=
+    [header,...rows]
+    .map(row=>
+      row.map(value=>
+        '"'+
+        String(value)
+        .replaceAll('"','""')+
+        '"'
+      ).join(",")
+    )
+    .join("\n");
+
+
+  const blob=
+    new Blob(
+      ["\ufeff"+csv],
+      {
+        type:"text/csv;charset=utf-8"
+      }
+    );
+
+
+  const url=
+    URL.createObjectURL(blob);
+
+
+  const a=
+    document.createElement("a");
+
+  a.href=url;
+
+  a.download=
+    "nutrition-plan.csv";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+};
+
+
+/* =========================================================
+   JSON BACKUP
+   ========================================================= */
+
+$("jsonBtn").onclick=function(){
+
+  const blob=
+    new Blob(
+      [
+        JSON.stringify(
+          entries,
+          null,
+          2
+        )
+      ],
+      {
+        type:"application/json"
+      }
+    );
+
+
+  const url=
+    URL.createObjectURL(blob);
+
+
+  const a=
+    document.createElement("a");
+
+  a.href=url;
+
+  a.download=
+    "nutrition-backup.json";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+};
+
+
+/* =========================================================
+   RESTORE JSON
+   ========================================================= */
+
+$("restoreBtn").onclick=function(){
+
+  $("jsonFile").click();
+
+};
+
+
+$("jsonFile").addEventListener(
+"change",
+function(){
+
+  const file=this.files[0];
+
+  if(!file)return;
+
+
+  const reader=
+    new FileReader();
+
+
+  reader.onload=function(){
+
+    try{
+
+      const data=
+        JSON.parse(
+          reader.result
+        );
+
+
+      if(!Array.isArray(data))
+        throw new Error();
+
+
+      entries=
+        data.filter(
+          e=>
+            e &&
+            e.food &&
+            e.date &&
+            Number(e.amount)>0
+        );
+
+
+      save();
+
+      renderAll();
+
+      alert(
+        "Backup restored successfully."
+      );
+
+    }catch{
+
+      alert(
+        "Invalid JSON backup file."
+      );
+
+    }
+
+  };
+
+
+  reader.readAsText(file);
+
+});
+
+
+/* =========================================================
+   DELETE EVERYTHING
+   ========================================================= */
+
+$("deleteBtn").onclick=function(){
+
+  if(!entries.length){
+
+    alert("There is no saved data.");
+
+    return;
+
+  }
+
+
+  if(
+    confirm(
+      "Delete all nutrition records?"
+    )
+  ){
+
+    entries=[];
+
+    save();
+
+    renderAll();
+
+  }
+
+};
+
+
+/* =========================================================
+   INITIAL VALUES
+   ========================================================= */
+
+const now=today();
+
+$("foodDate").value=now;
+
+$("dailyDate").value=now;
+
+$("weekDate").value=now;
+
+$("monthDate").value=monthNow();
+
+
+$("dailyDate")
+.addEventListener(
+"change",
+renderAll
+);
+
+$("weekDate")
+.addEventListener(
+"change",
+renderAll
+);
+
+$("monthDate")
+.addEventListener(
+"change",
+renderAll
+);
+
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+
+function renderAll(){
+
+  renderDaily();
+
+  renderWeekly();
+
+  renderMonthly();
+
+}
+
+
+window.addEventListener(
+"resize",
+()=>{
+  setTimeout(
+    renderAll,
+    50
+  );
+});
+
+
+renderAll();
+
+</script>
+
+</body>
+</html>
